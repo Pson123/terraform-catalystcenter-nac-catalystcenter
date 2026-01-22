@@ -157,10 +157,10 @@ locals {
 }
 
 resource "catalystcenter_fabric_zone" "fabric_zone" {
-  for_each = { for zone in try(local.fabric_zones, []) : zone.name => zone }
+  for_each = { for zone in try(local.fabric_zones, []) : zone.name => zone if contains(local.sites, zone.name) }
 
   authentication_profile_name = try(each.value.authentication_template.name, local.defaults.catalyst_center.fabric.fabric_sites.authentication_template.name, null)
-  site_id                     = try(local.site_id_list[each.key], each.key, null)
+  site_id                     = try(local.site_id_list[each.key], local.data_source_site_list[each.key], null)
 
   depends_on = [catalystcenter_fabric_site.fabric_site]
 }
