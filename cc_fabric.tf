@@ -162,10 +162,16 @@ locals {
 }
 
 resource "catalystcenter_fabric_zone" "fabric_zone" {
-  for_each = { for zone in try(local.fabric_zones, []) : zone.name => zone if contains(local.sites, zone.parent_fabric_site_name) }
+  for_each = {
+    for zone in try(local.fabric_zones, []) : zone.name => zone
+    if contains(local.sites, zone.parent_fabric_site_name) && (
+      contains(keys(local.site_id_list), zone.name) ||
+      contains(keys(local.data_source_site_list), zone.name)
+    )
+  }
 
   authentication_profile_name = try(each.value.authentication_template.name, local.defaults.catalyst_center.fabric.fabric_sites.authentication_template.name, null)
-  site_id                     = try(local.site_id_list[each.key], local.data_source_site_list[each.key], null)
+  site_id                     = try(local.site_id_list[each.key], local.data_source_site_list[each.key])
 
   depends_on = [catalystcenter_fabric_site.fabric_site]
 }
