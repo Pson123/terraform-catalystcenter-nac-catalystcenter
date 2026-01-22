@@ -9,12 +9,10 @@ locals {
   )
 
   # Sites that will be managed based on configuration
-  # When managed_sites is empty, manage all sites (regardless of manage_global_settings)
-  # When managed_sites has values, manage sites matching those prefixes
   sites = var.manage_specific_sites_only ? var.managed_sites : concat(
     [
       for site in try(local.catalyst_center.sites.areas, []) : try("${site.parent_name}/${site.name}", "Global")
-      if length(var.managed_sites) == 0 ||
+      if length(var.managed_sites) == 0 && !var.manage_global_settings ||
       anytrue([
         for prefix in var.managed_sites :
         startswith(try("${site.parent_name}/${site.name}", "Global"), prefix)
@@ -22,7 +20,7 @@ locals {
     ],
     [
       for building in try(local.catalyst_center.sites.buildings, []) : try("${building.parent_name}/${building.name}", "Global")
-      if length(var.managed_sites) == 0 ||
+      if length(var.managed_sites) == 0 && !var.manage_global_settings ||
       anytrue([
         for prefix in var.managed_sites :
         startswith(try("${building.parent_name}/${building.name}", "Global"), prefix)
@@ -30,7 +28,7 @@ locals {
     ],
     [
       for floor in try(local.catalyst_center.sites.floors, []) : try("${floor.parent_name}/${floor.name}", "Global")
-      if length(var.managed_sites) == 0 ||
+      if length(var.managed_sites) == 0 && !var.manage_global_settings ||
       anytrue([
         for prefix in var.managed_sites :
         startswith(try("${floor.parent_name}/${floor.name}", "Global"), prefix)
