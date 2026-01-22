@@ -151,13 +151,18 @@ resource "catalystcenter_apply_pending_fabric_events" "fabric_pending_events" {
 locals {
   fabric_zones = flatten([
     for fabric_site in try(local.catalyst_center.fabric.fabric_sites, []) : [
-      for fabric_zone in try(fabric_site.fabric_zones, []) : fabric_zone
+      for fabric_zone in try(fabric_site.fabric_zones, []) : merge(
+        fabric_zone,
+        {
+          "parent_fabric_site_name" : fabric_site.name
+        }
+      )
     ]
   ])
 }
 
 resource "catalystcenter_fabric_zone" "fabric_zone" {
-  for_each = { for zone in try(local.fabric_zones, []) : zone.name => zone if contains(local.sites, zone.name) }
+  for_each = { for zone in try(local.fabric_zones, []) : zone.name => zone if contains(local.sites, zone.parent_fabric_site_name) }
 
   authentication_profile_name = try(each.value.authentication_template.name, local.defaults.catalyst_center.fabric.fabric_sites.authentication_template.name, null)
   site_id                     = try(local.site_id_list[each.key], local.data_source_site_list[each.key], null)
