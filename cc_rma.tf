@@ -39,7 +39,7 @@ resource "catalystcenter_device_replacement" "mark" {
   )
   replacement_status = "MARKED-FOR-REPLACEMENT"
 
-  depends_on = [data.catalystcenter_network_devices.all_devices]
+  depends_on = [data.catalystcenter_network_devices.all_devices, catalystcenter_device_replacement_workflow.rma]
 }
 
 resource "catalystcenter_device_replacement_workflow" "rma" {
@@ -56,5 +56,5 @@ resource "catalystcenter_device_replacement_workflow" "rma" {
   faulty_device_serial_number      = data.catalystcenter_device_detail.rma_device[each.key].serial_number
   replacement_device_serial_number = each.value.serial_number
 
-  depends_on = [data.catalystcenter_network_devices.all_devices, catalystcenter_device_replacement.mark]
+  depends_on = [data.catalystcenter_network_devices.all_devices]
 }
